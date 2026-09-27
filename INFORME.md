@@ -145,35 +145,35 @@ Para el diseño, implementación y análisis del algoritmo voraz se establecen l
 
 ```text
 Algoritmo MochilaGreedyConGarantia(W, Elementos):
-    1.  Candidatos <- [e en Elementos tal que e.peso <= W]
-    2.  Si Candidatos es vacio:
-    3.      Retornar ResultadoMochila(0, 0, [], Falso)
-    4.
-    5.  Ordenar Candidatos descendentemente segun (e.valor / e.peso)
-    6.
-    7.  SolucionVoraz <- []
-    8.  PesoVoraz <- 0
-    9.  ValorVoraz <- 0
-    10. ElementoCritico <- Nulo
-    11.
-    12. Para cada e en Candidatos:
-    13.     Si PesoVoraz + e.peso <= W:
-    14.         SolucionVoraz.Agregar(e)
-    15.         PesoVoraz <- PesoVoraz + e.peso
-    16.         ValorVoraz <- ValorVoraz + e.valor
-    17.     Sino si ElementoCritico es Nulo:
-    18.         ElementoCritico <- e
-    19.
-    20. Si ElementoCritico != Nulo y ElementoCritico.valor > ValorVoraz:
-    21.     Retornar ResultadoMochila(ElementoCritico.valor, 
-                                      ElementoCritico.peso, 
-                                      [ElementoCritico], 
-                                      Verdadero)
-    22.
-    23. Retornar ResultadoMochila(ValorVoraz, 
-                                  PesoVoraz, 
-                                  SolucionVoraz, 
-                                  Falso)
+    Candidatos <- [e en Elementos tal que e.peso <= W]
+    Si Candidatos es vacio:
+        Retornar ResultadoMochila(0, 0, [], Falso)
+
+    Ordenar Candidatos descendentemente segun (e.valor / e.peso)
+
+    SolucionVoraz <- []
+    PesoVoraz <- 0
+    ValorVoraz <- 0
+    ElementoCritico <- Nulo
+
+    Para cada e en Candidatos:
+        Si PesoVoraz + e.peso <= W:
+            SolucionVoraz.Agregar(e)
+            PesoVoraz <- PesoVoraz + e.peso
+            ValorVoraz <- ValorVoraz + e.valor
+        Sino si ElementoCritico es Nulo:
+            ElementoCritico <- e
+
+    Si ElementoCritico != Nulo y ElementoCritico.valor > ValorVoraz:
+        Retornar ResultadoMochila(ElementoCritico.valor, 
+                                  ElementoCritico.peso, 
+                                  [ElementoCritico], 
+                                  Verdadero)
+
+    Retornar ResultadoMochila(ValorVoraz, 
+                              PesoVoraz, 
+                              SolucionVoraz, 
+                              Falso)
 ```
 
 #### 3.2.3 Garantía de Calidad (1/2) y Demostración Matemática
@@ -211,19 +211,19 @@ Para verificar el algoritmo y demostrar la activación de la garantía (punto 4 
 | **7** | 40 | 36 | 0.90 | Candidato |
 
 #### Traza de Ejecución Paso a Paso
-1. **Llenado voraz (Líneas 12-16):**
+1. **Llenado voraz:**
    * **Elemento 1:** $w_1 = 5 \le 100$. Entra. `PesoVoraz = 5`, `ValorVoraz = 10`. Capacidad remanente: 95.
    * **Elemento 2:** $w_2 = 5 \le 95$. Entra. `PesoVoraz = 10`, `ValorVoraz = 20`. Capacidad remanente: 90.
    * **Elemento 3:** $w_3 = 10 \le 90$. Entra. `PesoVoraz = 20`, `ValorVoraz = 38`. Capacidad remanente: 80.
    * **Elemento 4:** $w_4 = 10 \le 80$. Entra. `PesoVoraz = 30`, `ValorVoraz = 54`. Capacidad remanente: 70.
-2. **Detección del Elemento Crítico (Líneas 17-18):**
+2. **Detección del Elemento Crítico:**
    * **Elemento 5:** $w_5 = 75$. Como $75 > 70$ (espacio remanente), **no entra**.
    * Se registra `ElementoCritico = Elemento 5` ($v_c = 110, w_c = 75$).
 3. **Continuación del recorrido voraz:**
    * **Elemento 6:** $w_6 = 40 \le 70$. Entra. `PesoVoraz = 70`, `ValorVoraz = 94`. Capacidad remanente: 30.
    * **Elemento 7:** $w_7 = 40 > 30$. No entra.
    * Fin del recorrido: Solución voraz acumulada $P_1 = 94$ con peso $70$.
-4. **Evaluación de la Garantía de Calidad (Línea 20):**
+4. **Evaluación de la Garantía de Calidad:**
    * Se evalúa: $v_c (110) > \text{ValorVoraz} (94) \longrightarrow \mathbf{Verdadero}$.
    * **Se activa la garantía de calidad:** se descarta la solución voraz $S_1 = \{1, 2, 3, 4, 6\}$ y se toma únicamente $\{5\}$.
 
@@ -238,21 +238,21 @@ Para verificar el algoritmo y demostrar la activación de la garantía (punto 4 
 
 ### 3.4 Complejidad Temporal
 
-El análisis del orden de complejidad temporal se fundamenta línea por línea sobre el pseudocódigo:
+El análisis del orden de complejidad temporal se desglosa según cada etapa lógica del algoritmo:
 
-* **Líneas 1-3 (Filtrado de elementos no viables):**  
+* **Paso 1: Filtrado de elementos no viables:**  
   Se recorre la colección de $n$ elementos realizando una comparación $w_i \le W$ por elemento.  
   $$\text{Costo} = c_1 \cdot n = \mathcal{O}(n)$$
-* **Línea 5 (Ordenamiento de candidatos):**  
+* **Paso 2: Ordenamiento de candidatos:**  
   Se ordenan a lo sumo $n$ elementos según la clave calculada $v_i / w_i$. Un algoritmo de ordenamiento basado en comparaciones óptimo (como Timsort o Mergesort) tiene una complejidad en el peor y caso promedio de:  
   $$\text{Costo} = c_2 \cdot n \log_2(n) = \mathcal{O}(n \log n)$$
-* **Líneas 7-10 (Inicialización de variables escalares):**  
+* **Paso 3: Inicialización de variables:**  
   Asignaciones en tiempo constante:  
   $$\text{Costo} = \mathcal{O}(1)$$
-* **Líneas 12-18 (Ciclo de llenado voraz):**  
+* **Paso 4: Recorrido y llenado voraz:**  
   El bucle itera exactamente una vez por cada elemento candidato ($m \le n$). Dentro del bucle se ejecutan comparaciones aritméticas y sumas escalares de costo constante $\mathcal{O}(1)$. Por lo tanto:  
   $$\text{Costo} = \sum_{i=1}^m \mathcal{O}(1) = \mathcal{O}(m) \le \mathcal{O}(n)$$
-* **Líneas 20-23 (Comparación de garantía y retorno):**  
+* **Paso 5: Evaluación de la garantía y selección final:**  
   Comparación única entre dos enteros $v_c > ValorVoraz$ y construcción del objeto resultado:  
   $$\text{Costo} = \mathcal{O}(1)$$
 
