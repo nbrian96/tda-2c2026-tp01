@@ -48,9 +48,8 @@
      - 3.2.3 Garantía de Calidad (1/2) y Demostración Matemática
    - 3.3 Seguimiento con Set Reducido (Activación de la Garantía de Calidad)
    - 3.4 Complejidad Temporal
-   - 3.5 Sets de Datos
-   - 3.6 Tiempos de Ejecución
-   - 3.7 Informe de Resultados
+   - 3.5 Tiempos de Ejecución
+   - 3.6 Informe de Resultados
 4. [Programación Dinámica](#4-programación-dinámica)
    - 4.1 Planteo Tradicional: Maximizar Beneficio para Capacidad Fija *(Pendiente)*
    - 4.2 Planteo Alternativo: Minimizar Peso para Beneficio Fijo *(Pendiente)*
@@ -121,11 +120,10 @@ Dado que existen $2^n$ subconjuntos posibles, la versión 0/1 es **NP-Hard**. En
 ## 3. Algoritmo Greedy
 
 ### 3.1 Supuestos
-Para el diseño, implementación y análisis del algoritmo voraz se establecen los siguientes supuestos, condiciones y limitaciones:
-1. **Indivisibilidad de objetos (0/1):** Cada elemento debe incluirse íntegramente o descartarse ($x_i \in \{0, 1\}$). No se permite fraccionamiento.
-2. **Positividad de parámetros:** Tanto la capacidad de la mochila $W$ como los pesos $w_i$ y los beneficios $v_i$ de los $n$ objetos son cantidades enteras estrictamente positivas ($W > 0$, $w_i > 0$, $v_i > 0$).
-3. **Objetos viables:** Todo elemento cuyo peso individual sea estrictamente mayor que la capacidad total de la mochila ($w_i > W$) no puede formar parte de ninguna solución factible y es descartado en la fase de preprocesamiento.
-4. **Heurística voraz y necesidad de garantía:** Se asume que una heurística voraz estándar basada puramente en la densidad de valor ($v_i / w_i$) puede resultar arbitrariamente mala en la mochila 0/1. Por ello, el algoritmo incorpora un mecanismo de seguridad con **garantía de aproximación de factor 2** (garantía de calidad $1/2$), asegurando formalmente que la ganancia obtenida nunca sea inferior a la mitad del óptimo global:
+1. **Indivisibilidad (0/1):** Cada elemento $i$ se toma completo o se descarta ($x_i \in \{0, 1\}$); no se permite fraccionamiento.
+2. **Positividad:** Capacidad $W \in \mathbb{Z}^+$, pesos $w_i \in \mathbb{Z}^+$ y valores $v_i \in \mathbb{Z}^+$ son enteros estrictamente positivos.
+3. **Viabilidad:** Todo elemento con peso $w_i > W$ es descartado en el preprocesamiento por ser infactible.
+4. **Garantía de calidad (factor 2):** Como la heurística voraz simple por densidad ($v_i/w_i$) puede resultar arbitrariamente mala en la mochila 0/1, el algoritmo evalúa también el elemento crítico para garantizar formalmente que la solución devuelta nunca sea inferior a la mitad del óptimo global:
    $$\text{Solución} \ge \frac{1}{2} \cdot OPT$$
 
 ---
@@ -133,195 +131,111 @@ Para el diseño, implementación y análisis del algoritmo voraz se establecen l
 ### 3.2 Diseño
 
 #### 3.2.1 Estructuras de Datos Utilizadas
-* **`Elemento`:** Estructura de datos que almacena el identificador único `id`, el `peso` ($w_i$), el `valor` ($v_i$) y calcula dinámicamente la propiedad `ratio = valor / peso` (densidad de beneficio por unidad de peso).
-* **`ResultadoMochila`:** Estructura que encapsula el resultado devuelto por la función:
-  * `valor_total`: suma de los beneficios obtenidos.
-  * `peso_total`: peso acumulado consumido de la mochila.
-  * `elementos_seleccionados`: lista con las referencias a los objetos incluidos.
-  * `actuo_garantia`: variable booleana que indica si la solución final proviene del elemento crítico o del conjunto voraz tradicional.
-* **Lista dinámica:** Arreglo contiguo en memoria para almacenar la colección de elementos y permitir el ordenamiento eficiente en $\mathcal{O}(n \log n)$.
+* **`Elemento`:** Almacena `id`, `peso` ($w_i$), `valor` ($v_i$) y calcula dinámicamente `ratio = valor / peso`.
+* **`ResultadoMochila`:** Encapsula `valor_total`, `peso_total`, `elementos_seleccionados` y la bandera booleana `actuo_garantia`.
+* **Lista dinámica:** Arreglo contiguo para almacenar los candidatos y ordenarlos eficientemente en $\mathcal{O}(n \log n)$.
 
 #### 3.2.2 Pseudocódigo
 
 ```text
 Algoritmo MochilaGreedyConGarantia(W, Elementos):
     Candidatos <- [e en Elementos tal que e.peso <= W]
-    Si Candidatos es vacio:
-        Retornar ResultadoMochila(0, 0, [], Falso)
+    Si Candidatos es vacio: Retornar ResultadoMochila(0, 0, [], Falso)
 
-    Ordenar Candidatos descendentemente segun (e.valor / e.peso)
+    Ordenar Candidatos descendentemente por (e.valor / e.peso)
 
-    SolucionVoraz <- []
-    PesoVoraz <- 0
-    ValorVoraz <- 0
-    ElementoCritico <- Nulo
+    SolucionVoraz <- []; PesoVoraz <- 0; ValorVoraz <- 0; ElementoCritico <- Nulo
 
     Para cada e en Candidatos:
         Si PesoVoraz + e.peso <= W:
             SolucionVoraz.Agregar(e)
-            PesoVoraz <- PesoVoraz + e.peso
-            ValorVoraz <- ValorVoraz + e.valor
+            PesoVoraz += e.peso
+            ValorVoraz += e.valor
         Sino si ElementoCritico es Nulo:
             ElementoCritico <- e
 
     Si ElementoCritico != Nulo y ElementoCritico.valor > ValorVoraz:
-        Retornar ResultadoMochila(ElementoCritico.valor, 
-                                  ElementoCritico.peso, 
-                                  [ElementoCritico], 
-                                  Verdadero)
+        Retornar ResultadoMochila(ElementoCritico.valor, ElementoCritico.peso, [ElementoCritico], Verdadero)
 
-    Retornar ResultadoMochila(ValorVoraz, 
-                              PesoVoraz, 
-                              SolucionVoraz, 
-                              Falso)
+    Retornar ResultadoMochila(ValorVoraz, PesoVoraz, SolucionVoraz, Falso)
 ```
 
 #### 3.2.3 Garantía de Calidad (1/2) y Demostración Matemática
-Para justificar que el algoritmo satisface la cota $\text{Solución} \ge \frac{1}{2} OPT$:
-
-1. Sea $OPT$ el valor de la solución óptima del problema de la mochila binaria 0/1.
-2. Consideremos la **mochila fraccionaria** (relajación continua donde $x_i \in [0, 1]$), cuyo valor óptimo denotamos $OPT_{\text{frac}}$. Como toda solución binaria es una solución fraccionaria factible:
+1. Sea $OPT$ el valor de la solución óptima entera 0/1 y $OPT_{\text{frac}}$ la relajación continua ($x_i \in [0, 1]$). Al ser una relajación:
    $$OPT \le OPT_{\text{frac}}$$
-3. En la versión fraccionaria, el algoritmo voraz es exacto: incorpora todos los elementos del conjunto voraz $S_1$ (que aportan valor $P_1$) más una fracción continua $\alpha \in [0, 1)$ del elemento crítico $c$:
-   $$OPT_{\text{frac}} = P_1 + \alpha \cdot v_c < P_1 + v_c$$
-4. Por transitividad:
-   $$OPT < P_1 + v_c$$
-5. El algoritmo elige el máximo entre ambos valores: $\text{Solución} = \max(P_1, v_c)$. Por propiedad del promedio entre dos números reales:
-   $$\max(P_1, v_c) \ge \frac{P_1 + v_c}{2}$$
-6. Aplicando la cota de $OPT$:
-   $$\text{Solución} \ge \frac{P_1 + v_c}{2} > \frac{OPT}{2}$$
-
-Esto demuestra que **el beneficio devuelto por el algoritmo es estrictamente superior al 50% del óptimo**, logrando la garantía exigida.
+2. En la versión fraccionaria, Greedy es exacto: incorpora los elementos voraces $S_1$ (valor $P_1$) más una fracción continua $\alpha \in [0, 1)$ del elemento crítico $c$:
+   $$OPT_{\text{frac}} = P_1 + \alpha \cdot v_c < P_1 + v_c \implies OPT < P_1 + v_c$$
+3. El algoritmo selecciona $\text{Solución} = \max(P_1, v_c)$. Por propiedad del promedio:
+   $$\text{Solución} = \max(P_1, v_c) \ge \frac{P_1 + v_c}{2} > \frac{OPT}{2}$$
+Esto demuestra que el beneficio devuelto es estrictamente superior al 50% del óptimo global ($\text{Solución} \ge \frac{1}{2}OPT$).
 
 ---
 
 ### 3.3 Seguimiento con Set Reducido (Activación de la Garantía de Calidad)
 
-Para verificar el algoritmo y demostrar la activación de la garantía (punto 4 del enunciado), se aplica el seguimiento paso a paso sobre un set manual de 7 elementos con capacidad $W = 100$:
+Instancia de prueba con capacidad $W = 100$ y 7 elementos ordenados por ratio:
 
-#### Datos de Entrada
-| ID | Peso ($w_i$) | Beneficio ($v_i$) | Ratio ($v_i / w_i$) | Estado Inicial |
-| :-: | :-: | :-: | :-: | :--- |
-| **1** | 5 | 10 | 2.00 | Candidato |
-| **2** | 5 | 10 | 2.00 | Candidato |
-| **3** | 10 | 18 | 1.80 | Candidato |
-| **4** | 10 | 16 | 1.60 | Candidato |
-| **5** | 75 | 110 | 1.47 | Candidato |
-| **6** | 40 | 40 | 1.00 | Candidato |
-| **7** | 40 | 36 | 0.90 | Candidato |
+| ID | Peso ($w_i$) | Beneficio ($v_i$) | Ratio ($v_i / w_i$) | Decisión | Acumulados ($P_1, W_1$) |
+| :-: | :-: | :-: | :-: | :---: | :---: |
+| **1** | 5 | 10 | 2.00 | Entra | $P_1 = 10, W_1 = 5$ |
+| **2** | 5 | 10 | 2.00 | Entra | $P_1 = 20, W_1 = 10$ |
+| **3** | 10 | 18 | 1.80 | Entra | $P_1 = 38, W_1 = 20$ |
+| **4** | 10 | 16 | 1.60 | Entra | $P_1 = 54, W_1 = 30$ |
+| **5** | 75 | 110 | 1.47 | **Crítico** (no cabe: $30+75 > 100$) | $v_c = 110, w_c = 75$ |
+| **6** | 40 | 40 | 1.00 | Entra ($30+40 \le 100$) | $P_1 = 94, W_1 = 70$ |
+| **7** | 40 | 36 | 0.90 | No cabe ($70+40 > 100$) | Fin del recorrido |
 
-#### Traza de Ejecución Paso a Paso
-1. **Llenado voraz:**
-   * **Elemento 1:** $w_1 = 5 \le 100$. Entra. `PesoVoraz = 5`, `ValorVoraz = 10`. Capacidad remanente: 95.
-   * **Elemento 2:** $w_2 = 5 \le 95$. Entra. `PesoVoraz = 10`, `ValorVoraz = 20`. Capacidad remanente: 90.
-   * **Elemento 3:** $w_3 = 10 \le 90$. Entra. `PesoVoraz = 20`, `ValorVoraz = 38`. Capacidad remanente: 80.
-   * **Elemento 4:** $w_4 = 10 \le 80$. Entra. `PesoVoraz = 30`, `ValorVoraz = 54`. Capacidad remanente: 70.
-2. **Detección del Elemento Crítico:**
-   * **Elemento 5:** $w_5 = 75$. Como $75 > 70$ (espacio remanente), **no entra**.
-   * Se registra `ElementoCritico = Elemento 5` ($v_c = 110, w_c = 75$).
-3. **Continuación del recorrido voraz:**
-   * **Elemento 6:** $w_6 = 40 \le 70$. Entra. `PesoVoraz = 70`, `ValorVoraz = 94`. Capacidad remanente: 30.
-   * **Elemento 7:** $w_7 = 40 > 30$. No entra.
-   * Fin del recorrido: Solución voraz acumulada $P_1 = 94$ con peso $70$.
-4. **Evaluación de la Garantía de Calidad:**
-   * Se evalúa: $v_c (110) > \text{ValorVoraz} (94) \longrightarrow \mathbf{Verdadero}$.
-   * **Se activa la garantía de calidad:** se descarta la solución voraz $S_1 = \{1, 2, 3, 4, 6\}$ y se toma únicamente $\{5\}$.
-
-#### Resultado Obtenido
-* **Elementos seleccionados:** `[5]`
-* **Peso utilizado:** $75 / 100$
-* **Valor total obtenido:** **110**
-* **¿Actuó la garantía de calidad?:** **SÍ**
-* **Conclusión del seguimiento:** Sin la garantía de calidad, el voraz simple se habría conformado con $P_1 = 94$. La garantía rescató la solución devolviendo un valor de 110 (que coincide con el óptimo global de este conjunto).
+* **Evaluación de garantía:** $v_c (110) > P_1 (94) \longrightarrow$ **Se activa la garantía de calidad**.
+* **Resultado:** Se descarta $S_1$ y se toma únicamente `[5]`, con peso $75/100$, valor total **110** y `actuo_garantia = SÍ`.
+* **Conclusión:** Sin la garantía, el voraz simple se habría conformado con $P_1 = 94$. La garantía rescató el óptimo global ($110$).
 
 ---
 
-### 3.4 Complejidad Temporal
+### 3.4 Complejidad Temporal y Espacial
 
-El análisis del orden de complejidad temporal se desglosa según cada etapa lógica del algoritmo:
+* **Filtrado inicial:** Recorrido lineal comparando $w_i \le W \implies \mathcal{O}(n)$.
+* **Ordenamiento:** Ordenar candidatos por ratio mediante Timsort/Mergesort $\implies \mathcal{O}(n \log n)$.
+* **Recorrido voraz:** Bucle simple con sumas y comparaciones en $\mathcal{O}(1) \implies \mathcal{O}(n)$.
+* **Evaluación de garantía:** Comparación y retorno en tiempo constante $\implies \mathcal{O}(1)$.
 
-* **Paso 1: Filtrado de elementos no viables:**  
-  Se recorre la colección de $n$ elementos realizando una comparación $w_i \le W$ por elemento.  
-  $$\text{Costo} = c_1 \cdot n = \mathcal{O}(n)$$
-* **Paso 2: Ordenamiento de candidatos:**  
-  Se ordenan a lo sumo $n$ elementos según la clave calculada $v_i / w_i$. Un algoritmo de ordenamiento basado en comparaciones óptimo (como Timsort o Mergesort) tiene una complejidad en el peor y caso promedio de:  
-  $$\text{Costo} = c_2 \cdot n \log_2(n) = \mathcal{O}(n \log n)$$
-* **Paso 3: Inicialización de variables:**  
-  Asignaciones en tiempo constante:  
-  $$\text{Costo} = \mathcal{O}(1)$$
-* **Paso 4: Recorrido y llenado voraz:**  
-  El bucle itera exactamente una vez por cada elemento candidato ($m \le n$). Dentro del bucle se ejecutan comparaciones aritméticas y sumas escalares de costo constante $\mathcal{O}(1)$. Por lo tanto:  
-  $$\text{Costo} = \sum_{i=1}^m \mathcal{O}(1) = \mathcal{O}(m) \le \mathcal{O}(n)$$
-* **Paso 5: Evaluación de la garantía y selección final:**  
-  Comparación única entre dos enteros $v_c > ValorVoraz$ y construcción del objeto resultado:  
-  $$\text{Costo} = \mathcal{O}(1)$$
+$$\mathbf{T(n) = \mathcal{O}(n) + \mathcal{O}(n \log n) + \mathcal{O}(n) + \mathcal{O}(1) = \Theta(n \log n)}$$
 
-#### Cálculo de la Complejidad Temporal Total
-Sumando los términos:
-$$T(n) = \mathcal{O}(n) + \mathcal{O}(n \log n) + \mathcal{O}(1) + \mathcal{O}(n) + \mathcal{O}(1) = \mathbf{\mathcal{O}(n \log n)}$$
-
-El orden de complejidad temporal del algoritmo voraz está **estrictamente acotado por el paso de ordenamiento**, resultando en:
-$$\mathbf{T(n) = \Theta(n \log n)}$$
-
-**Complejidad Espacial:**  
-Se almacena la lista de elementos candidatos y la lista de objetos seleccionados, requiriendo un espacio adicional lineal proporcional a la cantidad de objetos: $\mathbf{\mathcal{O}(n)}$.
+* **Complejidad Espacial:** $\mathbf{\mathcal{O}(n)}$, requerida para almacenar los candidatos y la solución en memoria.
 
 ---
 
-### 3.5 Sets de Datos
+### 3.5 Tiempos de Ejecución
 
-* **Origen:** Se utilizaron instancias generadas mediante la función provista por la cátedra en `crear_mochila.py`:
-  * Pesos aleatorios enteros en el intervalo uniforme $[1, 200]$.
-  * Beneficios aleatorios enteros en el intervalo uniforme $[1, 1000]$.
-  * Capacidad establecida según la relación de diseño de la cátedra:
-    $$W = n \times 50$$
-    Dado que el peso promedio de cada objeto es $(1 + 200)/2 \approx 100$, esta capacidad asegura que aproximadamente el 50% de los elementos quepan en la mochila, representando un escenario balanceado y no trivial.
-* **Criterio de selección de tamaños ($N$):**  
-  Dado que la complejidad temporal $\mathcal{O}(n \log n)$ es cuasi-lineal y sumamente veloz, evaluar tamaños pequeños (como $N \le 100$) resultaría en tiempos del orden de microsegundos, indetectables e inundados por el ruido del sistema operativo. Por lo tanto, se seleccionaron tamaños en una escala amplia desde $N = 1.000$ hasta $N = 200.000$:
-  $$N \in \{1.000, 5.000, 10.000, 25.000, 50.000, 75.000, 100.000, 150.000, 200.000\}$$
-* **Protocolo de medición:** Para cada tamaño $N$ se realizaron **5 ejecuciones independientes**. Cada corrida midió estrictamente el tiempo de ejecución de `resolver_mochila_greedy` utilizando el reloj de alta resolución `time.perf_counter()`. Se computó el promedio aritmético de las 5 corridas para aislar variaciones causadas por interrupciones del sistema operativo.
+Mediciones sobre los datasets generados en `datasets/` promediadas mediante repeticiones adaptativas ($5$ a $50$ corridas) con reloj de alta resolución `time.perf_counter()`. Curva de ajuste teórico por mínimos cuadrados: $t_{\text{teórico}}(n) = c \cdot n \log_2(n)$ con $c \approx 8.35 \times 10^{-8}\text{ s}$:
 
----
-
-### 3.6 Tiempos de Ejecución
-
-A continuación se detallan los valores medidos y los valores teóricos ajustados por mínimos cuadrados a la curva $t_{\text{teórico}}(n) = c \cdot n \log_2(n)$:
-
-| $N$ (Objetos) | Capacidad ($W$) | Tiempo Real Promedio (ms) | Tiempo Teórico Ajustado (ms) | Diferencia Relativa |
+| $N$ (Objetos) | Capacidad ($W$) | Tiempo Real (ms) | Tiempo Teórico (ms) | Diferencia Relativa |
 | :---: | :---: | :---: | :---: | :---: |
-| **1.000** | 50.000 | 0.340 | 0.675 | 49.62% |
-| **5.000** | 250.000 | 2.055 | 4.161 | 50.61% |
-| **10.000** | 500.000 | 4.675 | 8.998 | 48.05% |
-| **25.000** | 1.250.000 | 26.003 | 24.734 | 5.13% |
-| **50.000** | 2.500.000 | 62.370 | 52.854 | 18.00% |
-| **75.000** | 3.750.000 | 71.970 | 82.253 | 12.50% |
-| **100.000** | 5.000.000 | 115.843 | 112.481 | 2.99% |
-| **150.000** | 7.500.000 | 174.031 | 174.663 | 0.36% |
-| **200.000** | 10.000.000 | 238.889 | 238.505 | 0.16% |
-
-#### Gráfico Comparativo de Tiempos (Curva Medida vs. Curva Teórica de Ajuste)
+| **1.000** | 50.000 | 0.3014 | 0.8307 | 63.72% |
+| **2.500** | 125.000 | 0.8530 | 2.3521 | 63.74% |
+| **5.000** | 250.000 | 1.9887 | 5.1210 | 61.17% |
+| **10.000** | 500.000 | 4.4643 | 11.0755 | 59.69% |
+| **25.000** | 1.250.000 | 16.8907 | 30.4433 | 44.52% |
+| **50.000** | 2.500.000 | 45.4110 | 65.0542 | 30.20% |
+| **100.000** | 5.000.000 | 119.6179 | 138.4436 | 13.60% |
+| **150.000** | 7.500.000 | 230.8713 | 214.9789 | 7.39% |
+| **175.000** | 8.750.000 | 268.2985 | 254.0527 | 5.61% |
+| **200.000** | 10.000.000 | 284.5446 | 293.5574 | **3.07%** |
 
 <div align="center">
 
-![Gráfico Comparativo de Tiempos - Algoritmo Greedy](grafico_tiempos_greedy.png)
+![Gráfico Comparativo de Tiempos - Algoritmo Greedy](graficos/grafico_tiempos_greedy.png)
 
-*Figura 1: Tiempos de ejecución medidos experimentalmente (puntos azules) contrastados con la curva teórica de ajuste por mínimos cuadrados $c \cdot n \log_2(n)$ (línea roja discontinua).*
+*Figura 1: Tiempos de ejecución medidos experimentalmente (azul) vs. curva teórica ajustada $c \cdot n \log_2(n)$ (rojo).*
 
 </div>
 
 ---
 
-### 3.7 Informe de Resultados
+### 3.6 Informe de Resultados
 
-#### ¿Se corresponde con la complejidad determinada inicialmente?
-**Sí, los resultados experimentales confirman de manera contundente la complejidad teórica $\mathcal{O}(n \log n)$ calculada a partir del pseudocódigo.**
-
-1. **Concordancia asintótica:**  
-   Como se observa en la *Figura 1*, a medida que el tamaño $N$ crece hacia el rango asintótico ($N \ge 75.000$), los puntos experimentales convergen estrechamente sobre la curva teórica de ajuste $c \cdot n \log_2(n)$. Para $N = 100.000$ la diferencia es de apenas el 2.99%, y para $N \ge 150.000$ desciende a menos del **0.4%** (0.36% en $150.000$ y 0.16% en $200.000$).
-2. **Desviaciones en tamaños pequeños ($N \le 10.000$):**  
-   Para valores reducidos de $N$, el tiempo absoluto de cómputo es menor a 5 milisegundos. En esta franja, el costo fijo del llamado a funciones en Python, la gestión de memoria interna y la recolección de basura representan una fracción visible del tiempo total, produciendo una desviación porcentual mayor pero en términos absolutos despreciable (fracciones de milisegundo).
-3. **Escalabilidad y desempeño:**  
-   La prueba más exigente ($N = 200.000$ elementos y capacidad $W = 10.000.000$) fue resuelta en apenas **~239 milisegundos**. Esto pone de manifiesto la principal virtud del paradigma Greedy: sacrificar la garantía de optimalidad absoluta (obteniendo a cambio una cota asegurada del 50%) para lograr tiempos de respuesta órdenes de magnitud más veloces que cualquier método exacto.
+* **Correspondencia con la complejidad teórica:** Los resultados empíricos validan la complejidad $\mathcal{O}(n \log n)$. A medida que $N$ crece hacia el orden asintótico ($N \ge 100.000$), la diferencia relativa desciende drásticamente del $13.60\%$ al **$3.07\%$** en $N = 200.000$ ($284.54\text{ ms}$ reales vs. $293.56\text{ ms}$ teóricos), confirmando que el ordenamiento domina la ejecución.
+* **Comportamiento en rangos bajos ($N \le 10.000$):** Los tiempos son del orden de microsegundos ($0.30$ a $4.46\text{ ms}$). Los desvíos relativos mayores se deben a costos fijos del entorno de ejecución (llamadas en Python, asignación de memoria) que introducen una cota constante despreciable en términos absolutos (< $6\text{ ms}$).
+* **Escalabilidad:** Resolver una instancia masiva de $200.000$ objetos y capacidad $W = 10.000.000$ tomó apenas **~285 ms**, evidenciando la ventaja de Greedy frente a los algoritmos exactos para problemas a gran escala.
 
 <div style="page-break-after: always;"></div>
 
