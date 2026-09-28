@@ -365,14 +365,61 @@ A continuación se detallan los valores medidos y los valores teóricos ajustado
 
 ## 5. Programación Lineal Entera
 
-> *Esta sección se completará en la etapa correspondiente a la resolución del Problema 4.*
-
 ### 5.1 Modelado Matemático y Formulación en PuLP
-* **Supuestos:** *(A completar)*
-* **Diseño:**
-  * *Variables de decisión binarias:* $x_i \in \{0, 1\}$
-  * *Función objetivo y restricciones:* *(A completar)*
-  * *Código / Pseudocódigo de resolución con PuLP:* *(A completar)*
+Para el diseño, implementación y análisis del algoritmo de programación lineal entera, se establecen los siguientes supuestos, condiciones y limitaciones: 
+
+- **Indivisibilidad de objetos (0/1):** cada elemento debe incluirse o descartarse. No se permite el fraccionamiento, convirtiendo el problema en un Programa Lineal entero Binario. 
+
+- **Positividad de parámetros:** a Capacidad W, los pesos wi y los beneficios vi con enteros estrictamente positivos. 
+
+- **Solver utilizado:** se emplea la biblioteca PuLP con el solver de Branch and Bound. El solver es COIN-OR Branch and cut (incluido por efecto).
+
+- **Dependencia del solver externo:** el tiempo de ejecución abarca la resolucion interna, no incluye el tiempo de armado del modelo en PuLP
+
+
+### 5.2 Diseño
+ 
+#### 5.2.1 Modelado Matemático
+ 
+**Variables de decisión:**
+$$x_i \in \{0, 1\}, \quad i = 1, \dots, n$$
+donde $x_i = 1$ indica que el elemento $i$ es incluido en la mochila, y $x_i = 0$ que no lo es.
+ 
+**Función objetivo:**
+$$\text{Maximizar} \quad Z = \sum_{i=1}^{n} v_i \cdot x_i$$
+ 
+**Restricción de capacidad:**
+$$\sum_{i=1}^{n} w_i \cdot x_i \leq W$$
+ 
+**Restricción de integralidad:**
+$$x_i \in \{0, 1\}, \quad \forall\, i = 1, \dots, n$$
+
+
+#### 5.2.3 Pseudocódigo
+ 
+```text
+Algoritmo MochilaProgramacionLineal(valores, pesos, W):
+    n = longitud(valores)
+    modelo = NuevoProblema(tipo=MAXIMIZAR)
+ 
+    Para i desde 0 hasta n-1:
+        X[i] = NuevaVariableBinaria("X_i")
+ 
+    AgregarObjetivo(modelo, sumatoria(valores[i] * X[i] para i en 0..n-1))
+    AgregarRestriccion(modelo, sumatoria(pesos[i] * X[i] para i en 0..n-1) <= W)
+ 
+    Resolver(modelo, solver=CBC)
+ 
+    seleccionados = []
+    Para i desde 0 hasta n-1:
+        Si valor(X[i]) == 1:
+            seleccionados.Agregar(i)
+ 
+    Retornar seleccionados
+```
+ 
+---
+
 * **Seguimiento con Set Reducido:** *(A completar)*
 * **Complejidad:** *(Análisis del algoritmo Branch & Bound utilizado por el solver)*
 * **Sets de datos:** *(A completar)*
