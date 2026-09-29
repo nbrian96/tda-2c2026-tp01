@@ -388,10 +388,10 @@ donde $x_i = 1$ indica que el elemento $i$ es incluido en la mochila, y $x_i = 0
 **Función objetivo:**
 $$\text{Maximizar} \quad Z = \sum_{i=1}^{n} v_i \cdot x_i$$
  
-**Restricción de capacidad:**
+**Restricción de capacidad:** se quiere poder agregar todos los elementos posibles en la mochila tal que se obtenga la máxima ganancia, sin superar la capacidad.
 $$\sum_{i=1}^{n} w_i \cdot x_i \leq W$$
  
-**Restricción de integralidad:**
+**Restricción de integralidad:** esto permite definir las variables como variables enteras binarias. 
 $$x_i \in \{0, 1\}, \quad \forall\, i = 1, \dots, n$$
 
 
