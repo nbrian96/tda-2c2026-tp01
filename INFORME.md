@@ -521,15 +521,16 @@ Se podría crear un conjunto de datasets con una mayor cantidad de elementos, pe
 
 ![Gráfico Comparativo de Tiempos - Programación Lineal](problema04/tiempos_PL.png)
 
-*Figura 4: Tiempos de ejecución medidos experimentalmente (puntos azules) contrastados con la curva teórica de ajuste por mínimos cuadrados $c \cdot n**3$ (línea amarilla discontinua).*
+*Figura 4: Tiempos de ejecución medidos experimentalmente (puntos azules) contrastados con la curva teórica de ajuste por mínimos cuadrados $\mathcal{O}(n^3)$ (línea amarilla discontinua).*
 
 </div>
 
+### 5.6 Informe de resultados
 
+En cuanto a la complejidad, la teoría establece un peor caso de $\mathcal{O}(2^n)$ debido al Branch & Bound que el solver debe aplicar. Sin embargo, los tiempos medidos en la práctica revelan un crecimiento significativamente más moderado, gracias a las técnicas de poda y planos de corte que incorpora el solver. 
 
-* **Informe de Resultados:** *(A completar)*
+Sin embargo, esta ventaja práctica tiene un límite. A medida que $n$ crece, el tiempo de resolución comienza a crecer de forma más pronunciada, y para ciertas instancias  el comportamiento exponencial teórico puede manifestarse. Por este motivo, la programación lineal entera no resulta adecuada para instancias de escala masiva como las que el algoritmo Greedy resuelve ($n = 200.000$ o más), pero sí representa la herramienta más poderosa disponible cuando se requiere una solución óptima en casos de tamaño moderado.
 
-<div style="page-break-after: always;"></div>
 
 ---
 
