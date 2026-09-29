@@ -76,3 +76,92 @@ El trabajo debe ser entregado en un archivo `.zip` conteniendo:
 3. **Archivos con los sets de datos utilizados.**
 4. **Archivos con resultados obtenidos para cada set de datos.**
 5. **Referencias bibliográficas:** Si se incluyeran, utilizar normas **APA 7ma edición**.
+
+## Ramas del repositorio
+
+Este proyecto utiliza un flujo de trabajo basado en ramas para organizar el desarrollo individual y la integración del equipo.
+
+### 🔹 Ramas principales
+
+- **Master**
+  - Rama estable del proyecto.
+  - Contiene versiones listas para entrega.
+
+- **Entrega**
+  - Rama de integración.
+  - Aquí se unen los cambios de las ramas de trabajo individuales.
+  - Representa la versión más actual del proyecto en desarrollo.
+
+### Ramas de desarrollo (feature branches)
+
+Cada integrante trabaja en su propia rama:
+
+- `Greedy`
+- ...
+- `lineal`
+
+Cada una contiene el trabajo individual antes de ser integrado a `Entrega`.
+
+---
+
+## Flujo de trabajo
+
+### 1. Actualizar rama develop
+
+Antes de empezar a trabajar:
+
+```bash
+git checkout entrega
+git pull origin entrega
+```
+
+### 2. Actualizar tu rama de trabajo
+
+Cambiar a tu rama de desarrollo:
+```bash
+git checkout rama_problema
+```
+
+Traer los últimos cambios de entrega:
+```bash
+git pull --rebase origin entrega
+```
+
+### 3. Trabajar en la feature
+
+Realizar los cambios necesarios en el código.
+```bash
+git add .
+git commit -m "Descripción clara del cambio realizado"
+```
+
+### 4. Subir los cambios a tu rama
+
+Una vez quieras guardar tus cambios, los guardas en tu rama:
+```bash
+git push origin rama_problema
+```
+
+### 5. Integrar cambios a la rama entrega
+
+Cuando la funcionalidad esté lista para integrarse:
+
+Cambiar a la rama entrega:
+```bash
+git checkout entrega
+```
+
+Actualiza la rama entrega:
+```bash
+git pull origin entrega
+```
+
+Fusionar la rama de trabajo feature con la rama entrega:
+```bash
+git merge rama_problema
+```
+
+Subir la versión integrada:
+```bash
+git push origin entrega
+```
