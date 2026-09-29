@@ -2,8 +2,10 @@ from random import randint
 import time
 import matplotlib.pyplot as plt
 from pulp import LpMaximize, LpProblem, LpVariable, lpSum, value, PULP_CBC_CMD
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import crear_mochila
-
 
 def leer_mochila(nombre_archivo):
     with open(nombre_archivo, "r") as f: 
@@ -90,7 +92,7 @@ k = tiempos_promedio[0] / (tamanios[0] ** 3)
 curva_teorica = [k * (n ** 3) for n in tamanios]
  
 plt.figure(figsize=(10, 6))
-plt.plot(tamanios, tiempos_promedio, marker="o", label="Tiempo real (solver CBC)", color="steelblue", linewidth=2)
+plt.plot(tamanios, tiempos_promedio, marker="o", label="Tiempo real (solver)", color="steelblue", linewidth=2)
 plt.plot(tamanios, curva_teorica, marker="s", label="Curva teórica O(n³)", color="orange", linewidth=2, linestyle="--")
 plt.xlabel("n (cantidad de elementos)")
 plt.ylabel("Tiempo (segundos)")
