@@ -370,9 +370,9 @@ Para el diseño, implementación y análisis del algoritmo de programación line
 
 - **Indivisibilidad de objetos (0/1):** cada elemento debe incluirse o descartarse. No se permite el fraccionamiento, convirtiendo el problema en un Programa Lineal entero Binario. 
 
-- **Positividad de parámetros:** a Capacidad W, los pesos wi y los beneficios vi con enteros estrictamente positivos. 
+- **Positividad de parámetros:** a Capacidad W, los pesos $$w_i$$ y los beneficios $$v_i$$ con enteros estrictamente positivos. 
 
-- **Solver utilizado:** se emplea la biblioteca PuLP con el solver de Branch and Bound. El solver es COIN-OR Branch and cut (incluido por efecto).
+- **Solver utilizado:** se emplea la biblioteca PuLP con el solver de Branch and Bound. El solver es COIN-OR Branch and cut (incluido por defecto).
 
 - **Dependencia del solver externo:** el tiempo de ejecución abarca la resolucion interna, no incluye el tiempo de armado del modelo en PuLP
 
@@ -422,7 +422,7 @@ Algoritmo MochilaProgramacionLineal(valores, pesos, W):
 
 ### 5.3 Seguimiento con Set Reducido
 
-Se tiene el siguiente archivo mochila10.txt:
+Se tiene el siguiente archivo mochila10.txt que muestra inicialmente la capacidad de la mochila y luego los pares peso,valor separados por espacios. 
 
 "
 500
@@ -472,10 +472,12 @@ $$Z = 547X_1 + 767X_2 + 215X_3 + 818X_4 + 697X_5 + 736X_6 + 138X_7 + 45X_8 + 534
 | 9 | 18 | 534 | Si |
 | 10 | 68 | 654 | Si |
 | **Total** | **499** | **4277** | |
- 
+
+**¿Cómo queda la función objetivo después de ejecutar el programa?:**
 $$Z = 547(1) + 767(1) + 215(1) + 818(1) + 697(1) + 736(0) + 138(0) + 45(1) + 534(1) + 654(1) = 4277$$ 
 
-Resultado: valor total = 4277, peso total = 499/500. La solución es óptima y factible.
+**Resultado final:** 
+valor total = 4277, peso total = 499/500. La solución es óptima y factible.
 
 ---
  
@@ -517,9 +519,9 @@ Se podría crear un conjunto de datasets con una mayor cantidad de elementos, pe
 
 <div align="center">
 
-![Gráfico Comparativo de Tiempos - Programación Lineal](tiempos_PL.png)
+![Gráfico Comparativo de Tiempos - Programación Lineal](problema04/tiempos_PL.png)
 
-*Figura 1: Tiempos de ejecución medidos experimentalmente (puntos azules) contrastados con la curva teórica de ajuste por mínimos cuadrados $c \cdot n**3$ (línea amarilla discontinua).*
+*Figura 4: Tiempos de ejecución medidos experimentalmente (puntos azules) contrastados con la curva teórica de ajuste por mínimos cuadrados $c \cdot n**3$ (línea amarilla discontinua).*
 
 </div>
 
