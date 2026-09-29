@@ -421,8 +421,24 @@ Algoritmo MochilaProgramacionLineal(valores, pesos, W):
 ---
 
 ### 5.3 Seguimiento con Set Reducido
+
+Se tiene el siguiente archivo mochila10.txt:
+
+"
+500
+4,547
+155,767
+76,215
+91,818
+79,697
+144,736
+150,138
+8,45
+18,534
+68,654
+"
  
-Se utiliza el siguiente conjunto de 6 elementos con capacidad $W = 50$:
+Se utiliza el conjunto de 10 elementos mencionado anteriormente con capacidad $W = 500$:
  
 | Elemento $i$ | Peso $w_i$ | Valor $v_i$ | Densidad $v_i/w_i$ |
 | :-----------: | :---------: | :---------: | :-----------------: |
@@ -438,14 +454,9 @@ Se utiliza el siguiente conjunto de 6 elementos con capacidad $W = 50$:
 | 10 | 68 | 654 | 9.62 |
 
 **Formulación del problema:**
-$$\text{Maximizar} \quad Z = 60x_0 + 100x_1 + 120x_2 + 10x_3 + 5x_4 + 70x_5$$
-$$\text{s.a.} \quad 10x_0 + 20x_1 + 30x_2 + 10x_3 + 10x_4 + 5x_5 \leq 50, \quad x_i \in \{0,1\}$$
+$$Z = 547X_1 + 767X_2 + 215X_3 + 818X_4 + 697X_5 + 736X_6 + 138X_7 + 45X_8 + 534X_9 + 654X_{10}$$
  
 **Resolución por solver:** los elementos excluidos son el número 6 (peso 144, valor 736) y el número 7 (peso 150, valor 138). Si se incluyera el elemento 6, el peso total sería 499 + 144 = 643 > 500, por lo que no cabe. El elemento 7 tampoco cabe y además tiene el ratio más bajo de todos (0.92).
-
-Resultado: valor total = 4277, peso total = 499/500. La solución es óptima y factible.
- 
-$$x_1 = 1, \quad x_2 = 1, \quad x_3 = 1, \quad x_4 = 1, \quad x_5 = 1, \quad x_6 = 0, x_7 = 0, \quad x_8 = 1, \quad x_9 = 1, \quad x_10 = 1
 
  
 | Elemento $i$ | Peso $w_i$ | Valor $v_i$ | Seleccionado|
@@ -462,28 +473,32 @@ $$x_1 = 1, \quad x_2 = 1, \quad x_3 = 1, \quad x_4 = 1, \quad x_5 = 1, \quad x_6
 | 10 | 68 | 654 | Si |
 | **Total** | **499** | **4277** | |
  
- 
+$$Z = 547(1) + 767(1) + 215(1) + 818(1) + 697(1) + 736(0) + 138(0) + 45(1) + 534(1) + 654(1) = 4277$$ 
+
+Resultado: valor total = 4277, peso total = 499/500. La solución es óptima y factible.
+
 ---
  
-
-
 ### 5.4 Complejidad Temporal
 
-** Relajación LP continua (Método Simplex):**  
-El solver comienza resolviendo la relajación LP del problema (variables continuas $0 \leq x_i \leq 1$) mediante el método Simplex. Su complejidad en el peor caso sobre una matriz de $n$ variables es:
-$$T_{\text{Simplex}} = \mathcal{O}(n^3)$$
- 
-**Branch & Bound para recuperar integralidad:**  
-Para restaurar la condición $x_i \in \{0,1\}$, CBC aplica Branch & Bound: bifurca variables fraccionarias y resuelve subproblemas LP en cada nodo. En el **peor caso teórico** el árbol de búsqueda tiene $2^n$ nodos:
-$$T_{\text{B\&B peor caso}} = \mathcal{O}(2^n)$$
+En teoría, el problema de la mochila formulado como Programa Lineal Entero Binario tiene complejidad exponencial. Cada variable $X_i$ puede tomar valor 0 o 1, por lo que para $n$ variables el espacio de soluciones tiene $2^n$ combinaciones posibles. En el peor caso, el solver debería explorar cada una de ellas para garantizar la optimalidad,
+
+Sin embargo, en la práctica el solver no necesita explorar ese árbol completo, gracias a tres mecanismos:
+
+- **Se establece una cota superior:** antes de aplicar Branch & Bound, el solver resuelve la relajación continua del problema (permitiendo $X_i \in [0,1]$) mediante el método Simplex en $\mathcal{O}(n^3)$. Esta solución continua da una cota superior del valor óptimo entero. Muchas ramas del árbol quedan descartadas inmediatamente si su cota superior no puede superar la mejor solución entera encontrada hasta el momento.
+
+- **Poda agresiva:** cuando en un nodo del árbol la solución LP relajada ya es entera (todas las variables toman valor 0 o 1 naturalmente), no hace falta seguir ramificando.
+
+- **Planos de corte:** el solver agregar restricciones válidas que achican el espacio de soluciones, logrando obtener una soluciòn òptima. 
 
 **Complejidad total:**
-$$T(n) = \mathcal{O}(n^3) + \mathcal{O}(2^n) = \mathbf{\mathcal{O}(2^n)}$$
-
-No obstante, el solver incorpora técnicas de poda agresiva que reducen drásticamente el árbol de búsqueda en instancias aleatorias balanceadas, produciendo un comportamiento significativamente mejor que el peor caso teórico, como se evidencia en los tiempos medidos.
+$$T(n) = \mathbf{\mathcal{O}(2^n)}$$
 
 
-* **Tiempos de Ejecución:** *(A completar)*
+### 5.5 Tiempos de ejecución
+
+A continuaciòn se muestran los resultados con diferentes tamaños de n = [10, 50, 100, 200, 500, 1000, 2000, 5000]
+
 
 | n | Capacidad W | Tiempo (s) |
 | :-----------: | :---------: | :---------: | 
@@ -495,6 +510,18 @@ No obstante, el solver incorpora técnicas de poda agresiva que reducen drástic
 | 1000 |  50000 | 0.196945 | 
 | 2000 | 100000 | 0.221469  | 
 | 5000 | 250000 | 0.38281  | 
+
+Se podría crear un conjunto de datasets con una mayor cantidad de elementos, pero el programa tarda demasiado. 
+
+#### Gráfico Comparativo de Tiempos (Curva Medida vs. Curva Teórica de Ajuste)
+
+<div align="center">
+
+![Gráfico Comparativo de Tiempos - Programación Lineal](tiempos_PL.png)
+
+*Figura 1: Tiempos de ejecución medidos experimentalmente (puntos azules) contrastados con la curva teórica de ajuste por mínimos cuadrados $c \cdot n**3$ (línea amarilla discontinua).*
+
+</div>
 
 
 
