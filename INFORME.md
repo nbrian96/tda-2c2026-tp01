@@ -420,10 +420,84 @@ Algoritmo MochilaProgramacionLineal(valores, pesos, W):
  
 ---
 
-* **Seguimiento con Set Reducido:** *(A completar)*
-* **Complejidad:** *(Análisis del algoritmo Branch & Bound utilizado por el solver)*
-* **Sets de datos:** *(A completar)*
+### 5.3 Seguimiento con Set Reducido
+ 
+Se utiliza el siguiente conjunto de 6 elementos con capacidad $W = 50$:
+ 
+| Elemento $i$ | Peso $w_i$ | Valor $v_i$ | Densidad $v_i/w_i$ |
+| :-----------: | :---------: | :---------: | :-----------------: |
+| 1 | 4 | 547  | 136.75 |
+| 2 | 155 | 767 | 4.95 |
+| 3 | 76 | 215 | 2.83 |
+| 4 | 91 | 818  | 8.99 |
+| 5 | 79 | 697   | 8.82 |
+| 6 |  144 | 736  | 5.11 |
+| 7 | 150 | 138 | 0.92 |
+| 8 | 8 | 45  | 5.62 |
+| 9 | 18 | 534 | 29.67 |
+| 10 | 68 | 654 | 9.62 |
+
+**Formulación del problema:**
+$$\text{Maximizar} \quad Z = 60x_0 + 100x_1 + 120x_2 + 10x_3 + 5x_4 + 70x_5$$
+$$\text{s.a.} \quad 10x_0 + 20x_1 + 30x_2 + 10x_3 + 10x_4 + 5x_5 \leq 50, \quad x_i \in \{0,1\}$$
+ 
+**Resolución por solver:** los elementos excluidos son el número 6 (peso 144, valor 736) y el número 7 (peso 150, valor 138). Si se incluyera el elemento 6, el peso total sería 499 + 144 = 643 > 500, por lo que no cabe. El elemento 7 tampoco cabe y además tiene el ratio más bajo de todos (0.92).
+
+Resultado: valor total = 4277, peso total = 499/500. La solución es óptima y factible.
+ 
+$$x_1 = 1, \quad x_2 = 1, \quad x_3 = 1, \quad x_4 = 1, \quad x_5 = 1, \quad x_6 = 0, x_7 = 0, \quad x_8 = 1, \quad x_9 = 1, \quad x_10 = 1
+
+ 
+| Elemento $i$ | Peso $w_i$ | Valor $v_i$ | Seleccionado|
+| :-----------: | :---------: | :---------: | :-----------------: |
+| 1 | 4 | 547  | Si|
+| 2 | 155 | 767 | Si |
+| 3 | 76 | 215 | Si |
+| 4 | 91 | 818  | Si |
+| 5 | 79 | 697   | Si |
+| 6 |  144 | 736  | No |
+| 7 | 150 | 138 | No |
+| 8 | 8 | 45  | Si |
+| 9 | 18 | 534 | Si |
+| 10 | 68 | 654 | Si |
+| **Total** | **499** | **4277** | |
+ 
+ 
+---
+ 
+
+
+### 5.4 Complejidad Temporal
+
+** Relajación LP continua (Método Simplex):**  
+El solver comienza resolviendo la relajación LP del problema (variables continuas $0 \leq x_i \leq 1$) mediante el método Simplex. Su complejidad en el peor caso sobre una matriz de $n$ variables es:
+$$T_{\text{Simplex}} = \mathcal{O}(n^3)$$
+ 
+**Branch & Bound para recuperar integralidad:**  
+Para restaurar la condición $x_i \in \{0,1\}$, CBC aplica Branch & Bound: bifurca variables fraccionarias y resuelve subproblemas LP en cada nodo. En el **peor caso teórico** el árbol de búsqueda tiene $2^n$ nodos:
+$$T_{\text{B\&B peor caso}} = \mathcal{O}(2^n)$$
+
+**Complejidad total:**
+$$T(n) = \mathcal{O}(n^3) + \mathcal{O}(2^n) = \mathbf{\mathcal{O}(2^n)}$$
+
+No obstante, el solver incorpora técnicas de poda agresiva que reducen drásticamente el árbol de búsqueda en instancias aleatorias balanceadas, produciendo un comportamiento significativamente mejor que el peor caso teórico, como se evidencia en los tiempos medidos.
+
+
 * **Tiempos de Ejecución:** *(A completar)*
+
+| n | Capacidad W | Tiempo (s) |
+| :-----------: | :---------: | :---------: | 
+| 10 | 500 | 0.016668  | 
+| 50 | 2500 | 0.030475 |
+| 100 | 5000 | 0.024867 | 
+| 200 | 10000 | 0.072371  | 
+| 500 | 25000 | 0.115021    | 
+| 1000 |  50000 | 0.196945 | 
+| 2000 | 100000 | 0.221469  | 
+| 5000 | 250000 | 0.38281  | 
+
+
+
 * **Informe de Resultados:** *(A completar)*
 
 <div style="page-break-after: always;"></div>
