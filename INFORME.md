@@ -21,7 +21,7 @@
 | # | Apellido y Nombre | Padrón |
 | :-: | :--- | :-: |
 | **1** | **Avila Solano, Nelson Brian** | **100244** |
-| **2** | *[Apellido y Nombre]* | *[Padrón]* |
+| **2** | **González Hidalgo, Eduardo Eliezer** | **110006** |
 | **3** | *[Apellido y Nombre]* | *[Padrón]* |
 | **4** | *[Apellido y Nombre]* | *[Padrón]* |
 
