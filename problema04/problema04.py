@@ -1,11 +1,6 @@
-from random import randint
 import time
-import matplotlib.pyplot as plt
 from pulp import LpMaximize, LpProblem, LpVariable, lpSum, value, PULP_CBC_CMD
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import crear_mochila
+
 
 def leer_mochila(nombre_archivo):
     with open(nombre_archivo, "r") as f: 
@@ -45,62 +40,3 @@ def resolver_mochila(valores, pesos, capacidad):
             peso_total += pesos[i]
 
     return seleccionados, valor_total, peso_total, tiempo_solver
-
-
-# ─────────────────────────────────────────────
-# Main
-# ─────────────────────────────────────────────
-
-tamanios = [10, 50, 100, 200, 500, 1000, 2000, 5000]
-repeticiones = 3
- 
-tiempos_promedio = []
- 
-print("Generando datasets y midiendo tiempos...\n")
- 
-for n in tamanios:
-    crear_mochila.crear_mochila(n)
-    capacidad, pesos, valores = leer_mochila("mochila" + str(n) + ".txt")
- 
-    tiempos = []
-    for _ in range(repeticiones):
-        _, _, _, t = resolver_mochila(valores, pesos, capacidad)
-        tiempos.append(t)
- 
-    promedio = sum(tiempos) / repeticiones
-    tiempos_promedio.append(promedio)
-    print("n=" + str(n) + " | tiempo promedio solver: " + str(round(promedio, 6)) + "s")
-
-with open("resultados_PL.txt", "w") as f:
-    f.write("Resultados - Problema 4: Programacion Lineal\n")
-    f.write("Tiempo medido: solo resolucion del solver (CBC)\n")
-    f.write("Repeticiones por instancia: " + str(repeticiones) + "\n")
-    f.write("-" * 45 + "\n")
-    f.write("{:<10} {:<15} {:<15}\n".format("n", "Capacidad W", "Tiempo (s)"))
-    f.write("-" * 45 + "\n")
-    for i in range(len(tamanios)):
-        n = tamanios[i]
-        f.write("{:<10} {:<15} {:<15}\n".format(
-            n,
-            n * 50,
-            round(tiempos_promedio[i], 6)
-        ))
- 
-print("\nResultados guardados en resultados_PL.txt")
-
-k = tiempos_promedio[0] / (tamanios[0] ** 3)
-curva_teorica = [k * (n ** 3) for n in tamanios]
- 
-plt.figure(figsize=(10, 6))
-plt.plot(tamanios, tiempos_promedio, marker="o", label="Tiempo real (solver)", color="steelblue", linewidth=2)
-plt.plot(tamanios, curva_teorica, marker="s", label="Curva teórica O(n³)", color="orange", linewidth=2, linestyle="--")
-plt.xlabel("n (cantidad de elementos)")
-plt.ylabel("Tiempo (segundos)")
-plt.title("Problema 4 - Programación Lineal: Tiempo del solver vs n")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.savefig("tiempos_PL.png", dpi=150)
-plt.show()
- 
-print("Gráfico guardado en tiempos_PL.png")
