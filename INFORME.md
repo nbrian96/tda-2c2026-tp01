@@ -21,7 +21,7 @@
 | # | Apellido y Nombre | Padrón |
 | :-: | :--- | :-: |
 | **1** | **Avila Solano, Nelson Brian** | **100244** |
-| **2** | *[Apellido y Nombre]* | *[Padrón]* |
+| **2** | **González Hidalgo, Eduardo Eliezer** | **110006** |
 | **3** | *[Apellido y Nombre]* | *[Padrón]* |
 | **4** | *[Apellido y Nombre]* | *[Padrón]* |
 
@@ -279,21 +279,172 @@ Mediciones sobre los datasets generados en `datasets/` promediadas mediante repe
 
 ## 5. Programación Lineal Entera
 
-> *Esta sección se completará en la etapa correspondiente a la resolución del Problema 4.*
-
 ### 5.1 Modelado Matemático y Formulación en PuLP
-* **Supuestos:** *(A completar)*
-* **Diseño:**
-  * *Variables de decisión binarias:* $x_i \in \{0, 1\}$
-  * *Función objetivo y restricciones:* *(A completar)*
-  * *Código / Pseudocódigo de resolución con PuLP:* *(A completar)*
-* **Seguimiento con Set Reducido:** *(A completar)*
-* **Complejidad:** *(Análisis del algoritmo Branch & Bound utilizado por el solver)*
-* **Sets de datos:** *(A completar)*
-* **Tiempos de Ejecución:** *(A completar)*
-* **Informe de Resultados:** *(A completar)*
+Para el diseño, implementación y análisis del algoritmo de programación lineal entera, se establecen los siguientes supuestos, condiciones y limitaciones: 
 
-<div style="page-break-after: always;"></div>
+- **Indivisibilidad de objetos (0/1):** cada elemento debe incluirse o descartarse. No se permite el fraccionamiento, convirtiendo el problema en un Programa Lineal entero Binario. 
+
+- **Positividad de parámetros:** a Capacidad W, los pesos $$w_i$$ y los beneficios $$v_i$$ con enteros estrictamente positivos. 
+
+- **Solver utilizado:** se emplea la biblioteca PuLP con el solver de Branch and Bound. El solver es COIN-OR Branch and cut (incluido por defecto).
+
+- **Dependencia del solver externo:** el tiempo de ejecución abarca la resolucion interna, no incluye el tiempo de armado del modelo en PuLP
+
+
+### 5.2 Diseño
+ 
+#### 5.2.1 Modelado Matemático
+ 
+**Variables de decisión:**
+$$x_i \in \{0, 1\}, \quad i = 1, \dots, n$$
+donde $x_i = 1$ indica que el elemento $i$ es incluido en la mochila, y $x_i = 0$ que no lo es.
+ 
+**Función objetivo:**
+$$\text{Maximizar} \quad Z = \sum_{i=1}^{n} v_i \cdot x_i$$
+ 
+**Restricción de capacidad:** se quiere poder agregar todos los elementos posibles en la mochila tal que se obtenga la máxima ganancia, sin superar la capacidad.
+$$\sum_{i=1}^{n} w_i \cdot x_i \leq W$$
+ 
+**Restricción de integralidad:** esto permite definir las variables como variables enteras binarias. 
+$$x_i \in \{0, 1\}, \quad \forall\, i = 1, \dots, n$$
+
+
+#### 5.2.3 Pseudocódigo
+ 
+```text
+Algoritmo MochilaProgramacionLineal(valores, pesos, W):
+    n = longitud(valores)
+    modelo = NuevoProblema(tipo=MAXIMIZAR)
+ 
+    Para i desde 0 hasta n-1:
+        X[i] = NuevaVariableBinaria("X_i")
+ 
+    AgregarObjetivo(modelo, sumatoria(valores[i] * X[i] para i en 0..n-1))
+    AgregarRestriccion(modelo, sumatoria(pesos[i] * X[i] para i en 0..n-1) <= W)
+ 
+    Resolver(modelo, solver=CBC)
+ 
+    seleccionados = []
+    Para i desde 0 hasta n-1:
+        Si valor(X[i]) == 1:
+            seleccionados.Agregar(i)
+ 
+    Retornar seleccionados
+```
+ 
+---
+
+### 5.3 Seguimiento con Set Reducido
+
+Se tiene el siguiente archivo mochila10.txt que muestra inicialmente la capacidad de la mochila y luego los pares peso,valor separados por espacios. 
+
+"
+500
+4,547
+155,767
+76,215
+91,818
+79,697
+144,736
+150,138
+8,45
+18,534
+68,654
+"
+ 
+Se utiliza el conjunto de 10 elementos mencionado anteriormente con capacidad $W = 500$:
+ 
+| Elemento $i$ | Peso $w_i$ | Valor $v_i$ | Densidad $v_i/w_i$ |
+| :-----------: | :---------: | :---------: | :-----------------: |
+| 1 | 4 | 547  | 136.75 |
+| 2 | 155 | 767 | 4.95 |
+| 3 | 76 | 215 | 2.83 |
+| 4 | 91 | 818  | 8.99 |
+| 5 | 79 | 697   | 8.82 |
+| 6 |  144 | 736  | 5.11 |
+| 7 | 150 | 138 | 0.92 |
+| 8 | 8 | 45  | 5.62 |
+| 9 | 18 | 534 | 29.67 |
+| 10 | 68 | 654 | 9.62 |
+
+**Formulación del problema:**
+$$Z = 547X_1 + 767X_2 + 215X_3 + 818X_4 + 697X_5 + 736X_6 + 138X_7 + 45X_8 + 534X_9 + 654X_{10}$$
+ 
+**Resolución por solver:** los elementos excluidos son el número 6 (peso 144, valor 736) y el número 7 (peso 150, valor 138). Si se incluyera el elemento 6, el peso total sería 499 + 144 = 643 > 500, por lo que no cabe. El elemento 7 tampoco cabe y además tiene el ratio más bajo de todos (0.92).
+
+ 
+| Elemento $i$ | Peso $w_i$ | Valor $v_i$ | Seleccionado|
+| :-----------: | :---------: | :---------: | :-----------------: |
+| 1 | 4 | 547  | Si|
+| 2 | 155 | 767 | Si |
+| 3 | 76 | 215 | Si |
+| 4 | 91 | 818  | Si |
+| 5 | 79 | 697   | Si |
+| 6 |  144 | 736  | No |
+| 7 | 150 | 138 | No |
+| 8 | 8 | 45  | Si |
+| 9 | 18 | 534 | Si |
+| 10 | 68 | 654 | Si |
+| **Total** | **499** | **4277** | |
+
+**¿Cómo queda la función objetivo después de ejecutar el programa?:**
+$$Z = 547(1) + 767(1) + 215(1) + 818(1) + 697(1) + 736(0) + 138(0) + 45(1) + 534(1) + 654(1) = 4277$$ 
+
+**Resultado final:** 
+valor total = 4277, peso total = 499/500. La solución es óptima y factible.
+
+---
+ 
+### 5.4 Complejidad Temporal
+
+En teoría, el problema de la mochila formulado como Programa Lineal Entero Binario tiene complejidad exponencial. Cada variable $X_i$ puede tomar valor 0 o 1, por lo que para $n$ variables el espacio de soluciones tiene $2^n$ combinaciones posibles. En el peor caso, el solver debería explorar cada una de ellas para garantizar la optimalidad,
+
+Sin embargo, en la práctica el solver no necesita explorar ese árbol completo, gracias a tres mecanismos:
+
+- **Se establece una cota superior:** antes de aplicar Branch & Bound, el solver resuelve la relajación continua del problema (permitiendo $X_i \in [0,1]$) mediante el método Simplex en $\mathcal{O}(n^3)$. Esta solución continua da una cota superior del valor óptimo entero. Muchas ramas del árbol quedan descartadas inmediatamente si su cota superior no puede superar la mejor solución entera encontrada hasta el momento.
+
+- **Poda agresiva:** cuando en un nodo del árbol la solución LP relajada ya es entera (todas las variables toman valor 0 o 1 naturalmente), no hace falta seguir ramificando.
+
+- **Planos de corte:** el solver agregar restricciones válidas que achican el espacio de soluciones, logrando obtener una soluciòn òptima. 
+
+**Complejidad total:**
+$$T(n) = \mathbf{\mathcal{O}(2^n)}$$
+
+
+### 5.5 Tiempos de ejecución
+
+A continuaciòn se muestran los resultados con diferentes tamaños de n = [10, 50, 100, 200, 500, 1000, 2000, 5000]
+
+
+| n | Capacidad W | Tiempo (s) |
+| :-----------: | :---------: | :---------: | 
+| 10 | 500 | 0.016668  | 
+| 50 | 2500 | 0.030475 |
+| 100 | 5000 | 0.024867 | 
+| 200 | 10000 | 0.072371  | 
+| 500 | 25000 | 0.115021    | 
+| 1000 |  50000 | 0.196945 | 
+| 2000 | 100000 | 0.221469  | 
+| 5000 | 250000 | 0.38281  | 
+
+Se podría crear un conjunto de datasets con una mayor cantidad de elementos, pero el programa tarda demasiado. 
+
+#### Gráfico Comparativo de Tiempos (Curva Medida vs. Curva Teórica de Ajuste)
+
+<div align="center">
+
+![Gráfico Comparativo de Tiempos - Programación Lineal](problema04/tiempos_PL.png)
+
+*Figura 4: Tiempos de ejecución medidos experimentalmente (puntos azules) contrastados con la curva teórica de ajuste por mínimos cuadrados $\mathcal{O}(n^3)$ (línea amarilla discontinua).*
+
+</div>
+
+### 5.6 Informe de resultados
+
+En cuanto a la complejidad, la teoría establece un peor caso de $\mathcal{O}(2^n)$ debido al Branch & Bound que el solver debe aplicar. Sin embargo, los tiempos medidos en la práctica revelan un crecimiento significativamente más moderado, gracias a las técnicas de poda y planos de corte que incorpora el solver. 
+
+Sin embargo, esta ventaja práctica tiene un límite. A medida que $n$ crece, el tiempo de resolución comienza a crecer de forma más pronunciada, y para ciertas instancias  el comportamiento exponencial teórico puede manifestarse. Por este motivo, la programación lineal entera no resulta adecuada para instancias de escala masiva como las que el algoritmo Greedy resuelve ($n = 200.000$ o más), pero sí representa la herramienta más poderosa disponible cuando se requiere una solución óptima en casos de tamaño moderado.
+
 
 ---
 
