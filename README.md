@@ -91,7 +91,6 @@ Estructura esperada:
  
 ```
 .
-├── crear_mochila.py
 └── problema03/
     ├── generar_datos.py
     ├── medir_tiempos.py
