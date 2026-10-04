@@ -23,13 +23,13 @@ Desde la carpeta del proyecto:
  
 ```bash
 # Resolver Mochilas/mochila5.txt con fuerza bruta y backtracking
-python codigo.py
+python3 codigo.py
  
 # Generar un archivo de mochila aleatorio
-python crear_mochila.py
+python3 crear_mochila.py
  
 # Medir tiempos y generar tiempos.csv y grafico.png
-python grafico.py
+python3 grafico.py
 ```
  
 En Linux/macOS usar `python3` en lugar de `python`.
@@ -55,13 +55,13 @@ Desde la carpeta del proyecto:
  
 ```bash
 # Ejemplo manual de 7 elementos (capacidad 100), donde actúa la garantía
-python problema02.py
+python3 problema02.py
  
 # Generar una mochila aleatoria de n elementos y resolverla (ej: 1000)
-python problema02.py 1000
+python3 problema02.py 1000
  
 # Resolver una mochila desde un archivo
-python problema02.py mochila1000.txt
+python3 problema02.py mochila1000.txt
 ```
  
 En Linux/macOS usar `python3` en lugar de `python`.
@@ -85,8 +85,6 @@ En Linux/macOS usar `python3` en lugar de `python`.
 pip install matplotlib
 ```
  
-- `crear_mochila.py` debe estar en la **carpeta anterior** a la de este problema (`generar_datos.py` lo importa desde `..`).
-- Memoria RAM: el algoritmo alternativo con n = 1000 construye una matriz de ~500 millones de posiciones y necesita varios GB de RAM libres.
 Estructura esperada:
  
 ```
@@ -105,21 +103,21 @@ Desde la carpeta `problema03/`, en este orden:
  
 ```bash
 # 1. Generar los sets de datos (mochila10.txt ... mochila1000.txt)
-python generar_datos.py
+python3 generar_datos.py
  
 # 2. Medir tiempos (genera res_tradicional.txt y res_alternativo.txt)
-python medir_tiempos.py
+python3 medir_tiempos.py
  
 # 3. Generar los gráficos (tradicional.png, alternativo.png, comparacion.png)
-python graficar.py
+python3 graficar.py
 ```
 
 
 ### Resolver una sola mochila
  
 ```bash
-python mochila_tradicional.py mochila10.txt
-python mochila_alternativo.py mochila10.txt
+python3 mochila_tradicional.py mochila10.txt
+python3 mochila_alternativo.py mochila10.txt
 ```
  
 Cada comando imprime el beneficio máximo. Ambos deben dar el mismo valor.
@@ -145,7 +143,6 @@ En Linux/macOS usar `python3` en lugar de `python`.
 pip install pulp matplotlib
 ```
  
-- `crear_mochila.py` debe estar en la **carpeta anterior** a la de este problema (`generar_datos.py` lo importa desde `..`).
 Estructura esperada:
  
 ```
@@ -162,10 +159,10 @@ Desde la carpeta `problema04/`, en este orden:
  
 ```bash
 # 1. Generar los sets de datos (mochila10.txt, mochila100.txt, ...)
-python generar_datos.py
+python3 generar_datos.py
  
 # 2. Medir tiempos del solver y generar resultados_PL.txt y tiempos_PL.png
-python graficar_tiempos.py
+python3 graficar_tiempos.py
 ```
  
 `problema04.py` contiene las funciones del modelo (`leer_mochila`, `construir_modelo`, `resolver_mochila`) y es importado por `graficar_tiempos.py`; no se ejecuta por separado.
